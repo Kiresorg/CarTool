@@ -86,7 +86,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityContainer Name="CarToolEntities1" annotation:LazyLoadingEnabled="true">
+        <EntityContainer Name="CarToolEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Lines" EntityType="Self.Line" />
           <EntitySet Name="Models" EntityType="Self.Model" />
           <AssociationSet Name="FK_dbo_Model_dbo_Line_LineID" Association="Self.FK_dbo_Model_dbo_Line_LineID">
@@ -99,7 +99,7 @@
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="CarToolModelStoreContainer" CdmEntityContainer="CarToolEntities1">
+        <EntityContainerMapping StorageEntityContainer="CarToolModelStoreContainer" CdmEntityContainer="CarToolEntities">
           <EntitySetMapping Name="Lines">
             <EntityTypeMapping TypeName="CarToolModel.Line">
               <MappingFragment StoreEntitySet="Line">

@@ -1,29 +1,27 @@
-﻿@model CarTool.Models.Model
+﻿@model CarTool.ViewModels.CarModelViewModel
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Model Details";
 }
 
-<h2>Details</h2>
+<h2>Model Details</h2>
 
 <div>
-    <h4>Model</h4>
-    <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => model.ModelName)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Name)
+            @Html.DisplayFor(model => model.ModelName)
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Description)
+            @Html.DisplayNameFor(model => model.ModelDescription)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Description)
+            @Html.DisplayFor(model => model.ModelDescription)
         </dd>
 
         <dt>
@@ -35,19 +33,24 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.ImagePath)
+            @Html.DisplayNameFor(model => model.Picture)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.ImagePath)
+            @{
+                var base64 = Convert.ToBase64String(Model.Picture);
+                var imgSrc = String.Format("data:image/gif;base64,{0}", base64);
+            }
+
+            <img src="@imgSrc" width="150" />
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Line.Name)
+            @Html.DisplayNameFor(model => model.LineName)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Line.Name)
+            @Html.DisplayFor(model => model.LineName)
         </dd>
 
     </dl>

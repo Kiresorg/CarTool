@@ -21,5 +21,6 @@ namespace CarTool.ViewModels
         public string ModelDescription { get; set; }
         public Nullable<int> Price { get; set; }
         public byte[] Picture { get; set; }
+        public string ImagePath { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -8,6 +9,7 @@ using System.Web;
 using System.Web.Mvc;
 using CarTool.Models;
 using CarTool.ViewModels;
+using System.IO;
 
 namespace CarTool.Controllers
 {
@@ -45,7 +47,10 @@ namespace CarTool.Controllers
             {
                 return HttpNotFound();
             }
-            return View(model);
+            List<Model> carModel = new List<Model>();
+            carModel.Add(model);
+
+            return View(GetCarModelViewModels(carModel).FirstOrDefault());
         }
 
         // GET: Models/Create
@@ -85,8 +90,10 @@ namespace CarTool.Controllers
             {
                 return HttpNotFound();
             }
-            ViewBag.LineID = new SelectList(db.Lines, "LineID", "Name", model.LineID);
-            return View(model);
+            List<Model> carModel = new List<Model>();
+            carModel.Add(model);
+
+            return View(GetCarModelViewModels(carModel).FirstOrDefault());
         }
 
         // POST: Models/Edit/5
@@ -94,16 +101,47 @@ namespace CarTool.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ModelID,LineID,Name,Description,Price,ImagePath")] Model model)
+        public ActionResult Edit(CarModelViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
+                Model model = db.Models.Find(viewModel.ModelID);
+
+                UpdateModelFromViewModel(model, viewModel);
+
                 db.Entry(model).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            ViewBag.LineID = new SelectList(db.Lines, "LineID", "Name", model.LineID);
-            return View(model);
+            Model updatedModel = db.Models.Find(viewModel.ModelID);
+
+            List<Model> carModel = new List<Model>();
+            carModel.Add(updatedModel);
+
+            return View(GetCarModelViewModels(carModel).FirstOrDefault());
+        }
+
+        public static void UpdateModelFromViewModel(Model model, CarModelViewModel vm)
+        {
+            model.Description = vm.ModelDescription;
+            model.Name = vm.ModelName;
+            model.Price = vm.Price;
+            if(!String.IsNullOrEmpty(vm.ImagePath)) // new image selected
+            {
+                Image img = Image.FromFile(vm.ImagePath);
+                byte[] newImageBytes;
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    img.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    newImageBytes = stream.ToArray();
+                    if(newImageBytes.Length > 0)
+                    {
+                        model.Picture = newImageBytes;
+                    }
+                }
+            }
+
+
         }
 
         // GET: Models/Delete/5
