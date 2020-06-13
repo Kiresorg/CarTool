@@ -1,0 +1,47 @@
+﻿@model IEnumerable<CarTool.Models.Line>
+
+@{
+    ViewBag.Title = "Lines";
+    WebGrid webGrid = new WebGrid(source: Model);
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+@webGrid.GetHtml(
+    htmlAttributes: new { @id = "linesGrid", @class = "Grid" },
+    columns: webGrid.Columns(
+        webGrid.Column("Name", "Name",
+            format: @<text>@Html.ActionLink(linkText: (string)item.Name,
+                          actionName: "ModelsByLine",
+                          controllerName: "CarModels",
+                          routeValues: new { lineID = item.LineID },
+                          htmlAttributes: null)</text>),
+        webGrid.Column("Description", "Description")
+        ))
+
+
+
+@*@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.ActionLink(item.Name,
+           "ModelsByLine",
+           "CarModels",
+           new { lineID = item.LineID },
+           null)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Description)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.LineID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.LineID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.LineID })
+        </td>
+    </tr>
+}
+
+</table>*@
