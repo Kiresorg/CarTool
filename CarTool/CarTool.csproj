@@ -203,7 +203,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="Utlities\LinqUtils.cs" />
     <Compile Include="ViewModels\CarModelViewModel.cs" />
   </ItemGroup>
   <ItemGroup>

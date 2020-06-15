@@ -12,7 +12,6 @@ using CarTool.ViewModels;
 using System.IO;
 using System.Threading.Tasks;
 using System.Linq.Expressions;
-using CarTool.Utlities;
 using System.Web.Helpers;
 
 namespace CarTool.Controllers
@@ -34,6 +33,15 @@ namespace CarTool.Controllers
             if (page < 1) page = 1;
             int skip = (page * pageSize) - pageSize;
             var models = GetModels(search, pageSize, out totalRecord);
+
+            foreach(var m in models)
+            {
+                if (m.Picture == null)
+                {
+                    // default image
+                    m.Picture = System.IO.File.ReadAllBytes(Server.MapPath("~/Content/no_image_selected.png"));
+                }
+            }
             ViewBag.TotalRows = totalRecord;
             ViewBag.Search = search;
             
@@ -48,6 +56,16 @@ namespace CarTool.Controllers
             }
             int totalRecord = 0;
             var models = GetModels("", 10, out totalRecord).Where(m => m.LineID == lineID);
+
+            foreach (var m in models)
+            {
+                if (m.Picture == null)
+                {
+                    // default image
+                    m.Picture = System.IO.File.ReadAllBytes(Server.MapPath("~/Content/no_image_selected.png"));
+                }
+            }
+
             ViewBag.TotalRows = totalRecord;
 
             return View("Index", GetCarModelViewModels(models));
@@ -78,7 +96,11 @@ namespace CarTool.Controllers
             {
                 return HttpNotFound();
             }
-
+            if (model.Picture == null)
+            {
+                // default image
+                model.Picture = System.IO.File.ReadAllBytes(Server.MapPath("~/Content/no_image_selected.png"));
+            }
             return View(model);
         }
 
@@ -105,11 +127,10 @@ namespace CarTool.Controllers
                         model.Picture = reader.ReadBytes(upload.ContentLength);
                     }
                 }
-                if(model.Picture == null)
+                if (model.Picture == null)
                 {
                     // default image
-                    string path = Server.MapPath("~/Content/no_image_selected.png");
-                    model.Picture = System.IO.File.ReadAllBytes(path);
+                    model.Picture = System.IO.File.ReadAllBytes(Server.MapPath("~/Content/no_image_selected.png"));
                 }
                 db.Models.Add(model);
                 db.SaveChanges();
@@ -132,7 +153,11 @@ namespace CarTool.Controllers
             {
                 return HttpNotFound();
             }
-
+            if (model.Picture == null)
+            {
+                // default image
+                model.Picture = System.IO.File.ReadAllBytes(Server.MapPath("~/Content/no_image_selected.png"));
+            }
             return View(model);
         }
 
