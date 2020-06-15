@@ -10,6 +10,7 @@ using System.Web.Mvc;
 using CarTool.Models;
 using CarTool.ViewModels;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace CarTool.Controllers
 {
@@ -96,23 +97,34 @@ namespace CarTool.Controllers
             return View(GetCarModelViewModels(carModel).FirstOrDefault());
         }
 
-        // POST: Models/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(CarModelViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                Model model = db.Models.Find(viewModel.ModelID);
+                try
+                {
+                    Model model = db.Models.Find(viewModel.ModelID);
+                    if (!String.IsNullOrEmpty(viewModel.ImagePath))
+                    {
+                        string path = Server.MapPath("~/App_Data/UploadedFiles/");
+                        viewModel.ImagePath = path + viewModel.ImagePath;
+                    }
 
-                UpdateModelFromViewModel(model, viewModel);
+                    UpdateModelFromViewModel(model, viewModel);
 
-                db.Entry(model).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                    db.Entry(model).State = EntityState.Modified;
+                    db.SaveChanges();
+                    
+                }
+                catch(Exception ex)
+                {
+                    Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                }
             }
+
+            
             Model updatedModel = db.Models.Find(viewModel.ModelID);
 
             List<Model> carModel = new List<Model>();
@@ -128,10 +140,10 @@ namespace CarTool.Controllers
             model.Price = vm.Price;
             if(!String.IsNullOrEmpty(vm.ImagePath)) // new image selected
             {
-                Image img = Image.FromFile(vm.ImagePath);
-                byte[] newImageBytes;
                 using (MemoryStream stream = new MemoryStream())
                 {
+                    Image img = Image.FromFile(vm.ImagePath);
+                    byte[] newImageBytes;
                     img.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
                     newImageBytes = stream.ToArray();
                     if(newImageBytes.Length > 0)
@@ -140,8 +152,35 @@ namespace CarTool.Controllers
                     }
                 }
             }
+        }
 
+        [HttpPost]
+        public JsonResult UploadImage()
+        {
+            try
+            {
+                if(Request.Files != null)
+                {
+                    var postedFile = Request.Files["uploadedFile"];
+                    if (postedFile != null)
+                    {
+                        string path = Server.MapPath("~/App_Data/UploadedFiles/");
+                        if (!Directory.Exists(path))
+                        {
+                            Directory.CreateDirectory(path);
+                        }
+                        path = path + postedFile.FileName;
+                        postedFile.SaveAs(path);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                return Json("Upload failed");
+            }
 
+            return Json("File uploaded successfully");
         }
 
         // GET: Models/Delete/5
@@ -212,8 +251,31 @@ namespace CarTool.Controllers
                 }); ;
             }
 
+            //foreach(var vm in result)
+            //{
+                
+            //    // save image to server and set ImagePathe
+            //    using (MemoryStream ms = new MemoryStream(vm.Picture))
+            //    {
+            //        Image img = Image.FromStream(ms);
+            //        string path = Server.MapPath("~/App_Data/UploadedFiles/foo.jpg");
+            //        //vm.ImagePath = path + "foo.jpg";
+            //        using (FileStream file = new FileStream(path, FileMode.Create, System.IO.FileAccess.Write))
+            //        {
+            //            byte[] bytes = new byte[ms.Length];
+            //            ms.Read(bytes, 0, (int)ms.Length);
+            //            file.Write(bytes, 0, bytes.Length);
+            //            ms.Close();
+            //        }
+            //    }
+            //}
+
             return result;
         }
 
+        public static String ConvertByteArrayToBase64(byte[] picture)
+        {
+            return Convert.ToBase64String(picture);
+        }
     }
 }

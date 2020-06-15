@@ -5,7 +5,6 @@
 }
 
 <h2>Edit</h2>
-<script src="~/Scripts/ImageHandler.js"></script>
 
 @using (Html.BeginForm())
 {
@@ -50,11 +49,14 @@
                 var imgSrc = String.Format("data:image/gif;base64,{0}", base64);
             }
 
-            <img src="@imgSrc" width="150" />
-            <input id="imageUpload" type="file" name="ImagePath" required onchange="ConvertImageToArray(this)" />
+            <img id="currentImage" src="@imgSrc" width="150" />
+            <input id="imageUpload" type="file" accept="image/*" />
         </div>
     </div>
-    
+ 
+    <div>
+        @Html.HiddenFor(model => model.ImagePath, new { @id="imagePath" })
+    </div>
     <div class="form-group">
         <div class="col-md-offset-2 col-md-10">
             <input type="submit" value="Save" class="btn btn-default" />
@@ -69,4 +71,43 @@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(function (event) {
+            $('#imageUpload').on('change', function (e) {
+                var files = e.target.files;
+                var fileName = files[0].name;
+                $('input[name="ImagePath"]').val(fileName);
+                //$('#currentImage').val(fileName);
+
+
+                if (files && files.length > 0) {
+                    if (window.FormData !== undefined) {
+                        var data = new FormData();
+                        data.append("uploadedFile", files[0]);
+                    }
+
+                    $.ajax({
+                        type: "POST",
+                        url: '/CarModels/UploadImage',
+                        contentType: false,
+                        processData: false,
+                        data: data,
+                        success: function (result) {
+                            alert("New image uploaded succesfully");
+                        },
+                        error: function (xhr, status, p3, p4) {
+                            var err = "Error " + " " + status + " " + p3 + " " + p4;
+                            if (xhr.responseText && xhr.responseText[0] == "{")
+                                err = JSON.parse(xhr.responseText).Message;
+                            console.log(err);
+                        }
+                    });
+
+                } else {
+                    alert("This browser doesn't support HTML5 file uploads");
+                }
+            });
+        })
+        
+    </script>
 }
