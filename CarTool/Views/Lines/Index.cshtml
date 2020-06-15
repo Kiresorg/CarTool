@@ -21,27 +21,3 @@
                           htmlAttributes: null)</text>),
         webGrid.Column("Description", "Description")
         ))
-
-
-
-@*@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.ActionLink(item.Name,
-           "ModelsByLine",
-           "CarModels",
-           new { lineID = item.LineID },
-           null)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.LineID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.LineID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.LineID })
-        </td>
-    </tr>
-}
-
-</table>*@

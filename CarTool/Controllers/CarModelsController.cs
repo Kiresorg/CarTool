@@ -11,17 +11,33 @@ using CarTool.Models;
 using CarTool.ViewModels;
 using System.IO;
 using System.Threading.Tasks;
+using System.Linq.Expressions;
+using CarTool.Utlities;
+using System.Web.Helpers;
 
 namespace CarTool.Controllers
 {
+    [Authorize]
     public class CarModelsController : Controller
     {
         private CarToolEntities1 db = new CarToolEntities1();
 
-        // GET: Models
         public ActionResult Index()
         {
-           return View(GetCarModelViewModels(db.Models));
+            return View();
+        }
+        // GET: Models
+        public ActionResult Models(int page = 1, string search = "")
+        {
+            int pageSize = 10;
+            int totalRecord = 0;
+            if (page < 1) page = 1;
+            int skip = (page * pageSize) - pageSize;
+            var models = GetModels(search, pageSize, out totalRecord);
+            ViewBag.TotalRows = totalRecord;
+            ViewBag.Search = search;
+            
+            return View("Index", GetCarModelViewModels(models));
         }
 
         public ActionResult ModelsByLine(int? lineID)
@@ -30,10 +46,24 @@ namespace CarTool.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            var models = db.Models
-                .Where(m => m.LineID == lineID);
+            int totalRecord = 0;
+            var models = GetModels("", 10, out totalRecord).Where(m => m.LineID == lineID);
+            ViewBag.TotalRows = totalRecord;
 
             return View("Index", GetCarModelViewModels(models));
+        }
+
+        public List<Model> GetModels(string search, int pageSize, out int totalRecord)
+        {
+            var models = (from m in db.Models
+                          where
+                              m.Description.Contains(search) ||
+                              m.Name.Contains(search)
+                          select m
+                            );
+            totalRecord = models.Count();
+
+            return models.ToList();
         }
 
         // GET: Models/Details/5
@@ -48,10 +78,8 @@ namespace CarTool.Controllers
             {
                 return HttpNotFound();
             }
-            List<Model> carModel = new List<Model>();
-            carModel.Add(model);
 
-            return View(GetCarModelViewModels(carModel).FirstOrDefault());
+            return View(model);
         }
 
         // GET: Models/Create
@@ -66,13 +94,26 @@ namespace CarTool.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ModelID,LineID,Name,Description,Price,ImagePath")] Model model)
+        public ActionResult Create([Bind(Include = "ModelID,LineID,Name,Description,Price")] Model model, HttpPostedFileBase upload)
         {
             if (ModelState.IsValid)
             {
+                if(upload != null && upload.ContentLength > 0)
+                {
+                    using (var reader = new BinaryReader(upload.InputStream))
+                    {
+                        model.Picture = reader.ReadBytes(upload.ContentLength);
+                    }
+                }
+                if(model.Picture == null)
+                {
+                    // default image
+                    string path = Server.MapPath("~/Content/no_image_selected.png");
+                    model.Picture = System.IO.File.ReadAllBytes(path);
+                }
                 db.Models.Add(model);
                 db.SaveChanges();
-                return RedirectToAction("Index");
+                return RedirectToAction("Models");
             }
 
             ViewBag.LineID = new SelectList(db.Lines, "LineID", "Name", model.LineID);
@@ -91,32 +132,29 @@ namespace CarTool.Controllers
             {
                 return HttpNotFound();
             }
-            List<Model> carModel = new List<Model>();
-            carModel.Add(model);
 
-            return View(GetCarModelViewModels(carModel).FirstOrDefault());
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(CarModelViewModel viewModel)
+        public ActionResult Edit([Bind(Include = "ModelID,LineID,Name,Description,Price,Picture")] Model model, HttpPostedFileBase upload)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    Model model = db.Models.Find(viewModel.ModelID);
-                    if (!String.IsNullOrEmpty(viewModel.ImagePath))
+                    if (upload != null && upload.ContentLength > 0)
                     {
-                        string path = Server.MapPath("~/App_Data/UploadedFiles/");
-                        viewModel.ImagePath = path + viewModel.ImagePath;
+                        using (var reader = new BinaryReader(upload.InputStream))
+                        {
+                            model.Picture = reader.ReadBytes(upload.ContentLength);
+                        }
                     }
-
-                    UpdateModelFromViewModel(model, viewModel);
 
                     db.Entry(model).State = EntityState.Modified;
                     db.SaveChanges();
-                    
+                    return RedirectToAction("Models");
                 }
                 catch(Exception ex)
                 {
@@ -124,13 +162,7 @@ namespace CarTool.Controllers
                 }
             }
 
-            
-            Model updatedModel = db.Models.Find(viewModel.ModelID);
-
-            List<Model> carModel = new List<Model>();
-            carModel.Add(updatedModel);
-
-            return View(GetCarModelViewModels(carModel).FirstOrDefault());
+            return View(model);
         }
 
         public static void UpdateModelFromViewModel(Model model, CarModelViewModel vm)
@@ -152,35 +184,6 @@ namespace CarTool.Controllers
                     }
                 }
             }
-        }
-
-        [HttpPost]
-        public JsonResult UploadImage()
-        {
-            try
-            {
-                if(Request.Files != null)
-                {
-                    var postedFile = Request.Files["uploadedFile"];
-                    if (postedFile != null)
-                    {
-                        string path = Server.MapPath("~/App_Data/UploadedFiles/");
-                        if (!Directory.Exists(path))
-                        {
-                            Directory.CreateDirectory(path);
-                        }
-                        path = path + postedFile.FileName;
-                        postedFile.SaveAs(path);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                return Json("Upload failed");
-            }
-
-            return Json("File uploaded successfully");
         }
 
         // GET: Models/Delete/5
@@ -206,7 +209,7 @@ namespace CarTool.Controllers
             Model model = db.Models.Find(id);
             db.Models.Remove(model);
             db.SaveChanges();
-            return RedirectToAction("Index");
+            return RedirectToAction("Models");
         }
 
         protected override void Dispose(bool disposing)
@@ -250,26 +253,6 @@ namespace CarTool.Controllers
                     Price = m.Price
                 }); ;
             }
-
-            //foreach(var vm in result)
-            //{
-                
-            //    // save image to server and set ImagePathe
-            //    using (MemoryStream ms = new MemoryStream(vm.Picture))
-            //    {
-            //        Image img = Image.FromStream(ms);
-            //        string path = Server.MapPath("~/App_Data/UploadedFiles/foo.jpg");
-            //        //vm.ImagePath = path + "foo.jpg";
-            //        using (FileStream file = new FileStream(path, FileMode.Create, System.IO.FileAccess.Write))
-            //        {
-            //            byte[] bytes = new byte[ms.Length];
-            //            ms.Read(bytes, 0, (int)ms.Length);
-            //            file.Write(bytes, 0, bytes.Length);
-            //            ms.Close();
-            //        }
-            //    }
-            //}
-
             return result;
         }
 

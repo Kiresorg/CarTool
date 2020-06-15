@@ -1,4 +1,4 @@
-﻿@model CarTool.ViewModels.CarModelViewModel
+﻿@model CarTool.Models.Model
 
 @{
     ViewBag.Title = "Model Details";
@@ -9,19 +9,19 @@
 <div>
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.ModelName)
+            @Html.DisplayNameFor(model => model.Name)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.ModelName)
+            @Html.DisplayFor(model => model.Name)
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.ModelDescription)
+            @Html.DisplayNameFor(model => model.Description)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.ModelDescription)
+            @Html.DisplayFor(model => model.Description)
         </dd>
 
         <dt>
@@ -43,14 +43,6 @@
             }
 
             <img src="@imgSrc" width="150" />
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.LineName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.LineName)
         </dd>
 
     </dl>

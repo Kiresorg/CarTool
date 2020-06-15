@@ -23,7 +23,7 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Lines", "Index", "Lines")</li>
-                    <li>@Html.ActionLink("Models", "Index", "CarModels")</li>
+                    <li>@Html.ActionLink("Models", "Models", "CarModels")</li>
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>
@@ -33,7 +33,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - Toyota, Inc.</p>
+            <p>&copy; @DateTime.Now.Year - Definitely Not Toyota, Inc.</p>
         </footer>
     </div>
 

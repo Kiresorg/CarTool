@@ -11,14 +11,20 @@ namespace CarTool.Models
 {
     using System;
     using System.Collections.Generic;
-    
+    using System.ComponentModel.DataAnnotations;
+
     public partial class Model
     {
         public int ModelID { get; set; }
         public int LineID { get; set; }
+
+        [Required(ErrorMessage = "A model name is required"), MaxLength(30)]
         public string Name { get; set; }
+
+        [Required(ErrorMessage = "A description is required"), MaxLength(30)]
         public string Description { get; set; }
         public Nullable<int> Price { get; set; }
+
         public byte[] Picture { get; set; }
     
         public virtual Line Line { get; set; }

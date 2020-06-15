@@ -10,6 +10,7 @@ using CarTool.Models;
 
 namespace CarTool.Controllers
 {
+    [Authorize]
     public class LinesController : Controller
     {
         private CarToolEntities1 db = new CarToolEntities1();
